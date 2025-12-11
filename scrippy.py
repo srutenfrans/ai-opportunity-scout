@@ -16,63 +16,106 @@ if 'data' not in st.session_state:
 
 # 3. De Invoer (Sidebar)
 with st.sidebar:
-    st.header("Nieuw Proces Scannen")
+    st.header("Nieuwe ERP Agent-Kans Scannen")
     
-    name = st.text_input("Naam van het proces", "Bijv. Factuurverwerking")
+    name = st.text_input("Naam van de ERP-taak/proces", "Bijv. Automatische Boeking van inkoopfacturen")
     
-    # Gartner Y-As: Intern vs Extern
-    target = st.radio("Wie is de doelgroep?", ["Intern (Operaties)", "Extern (Klanten/Product)"])
+    # Y-As: Doelgebied binnen het ERP
+    target = st.radio("Focusgebied van de taak?", ["Interne Transacties (Back Office)", "Besluitvorming/Planning (Core Capabilities)"])
     
-    st.subheader("Everyday AI Check (Automatisering)")
-    repetitie = st.slider("Hoe repetitief is het?", 1, 5, 3)
-    regels = st.slider("Zijn er vaste regels?", 1, 5, 3)
-    tijd = st.slider("Hoeveel tijd kost het (Volume)?", 1, 5, 3) # Bepaalt bolgrootte
-    frustratie = st.slider("Mate van frustratie?", 1, 5, 1) # Bepaalt kleur (rood is erg)
+    # --- ERP AGENT-GESCHIKTHEID (Bepalen Implementatiemoeilijkheid / X-as) ---
+    st.subheader("1. Agent Haalbaarheid (Technisch & Gestructureerdheid)")
+    # Vragen die bepalen hoe 'moeilijk' (Game-Changing) de Agent is:
     
-    st.subheader("Game-Changing AI Check (Innovatie)")
-    data_int = st.slider("Is het data-intensief?", 1, 5, 1)
-    creatief = st.slider("Is creativiteit/generatie nodig?", 1, 5, 1)
+    # Vraag 1: Gestructureerdheid van de input (ERP-velden, vaste formaten)
+    gestructureerdheid = st.slider("1. Gestructureerdheid Input", 1, 5, 3, help="Hoe gestandaardiseerd zijn de data en invoer in het ERP (5=Erg vast, 1=Veel vrije tekst)?")
+    
+    # Vraag 2: Complexiteit van de te volgen regels
+    regels_complexiteit = st.slider("2. Transactie-complexiteit", 1, 5, 3, help="Hoe complex zijn de bedrijfsregels of workflows die de Agent moet volgen (5=Duidelijke stappen, 1=Veel uitzonderingen)?")
+    
+    # Vraag 3: Noodzaak voor generatieve AI
+    generatieve_noodzaak = st.slider("3. Creativiteit/Generatie nodig?", 1, 5, 1, help="Moet de Agent zelf teksten, antwoorden of unieke code genereren (5=Ja, 1=Nee)?")
+    
+    st.subheader("2. Prioriteit & Impact (Bepalen Volume & Urgentie)")
+    # Deze bepalen de Grootte (Volume) en Kleur (Frustratie)
+    
+    # Vraag 4: Frequentie/Volume (Bepaalt de ROI/Bolgrootte)
+    frequentie_volume = st.slider("4. Frequentie & Volume", 1, 5, 3, help="Hoe vaak en hoeveel tijd wordt aan deze taak besteed (5=Dagelijkse, hoge volumes)?")
+    
+    # Vraag 5: Foutgevoeligheid/Frustratie (Bepaalt Kleur/Urgentie)
+    frustratie = st.slider("5. Foutgevoeligheid/Frustratie", 1, 5, 1, help="Hoe vaak gaat dit mis of veroorzaakt het irritatie bij de eindgebruiker (5=Hoog)?")
     
     # Knop om toe te voegen
     if st.button("Plot op Radar"):
-        # Logica: Bereken scores
-        # Everyday Score (gemiddelde van repetitie en regels)
-        everyday_score = (repetitie + regels) / 2
         
-        # Game Changing Score (gemiddelde van data en creativiteit)
-        game_changing_score = (data_int + creatief) / 2
+        # --- BEREKENING LOGICA (Aangepast voor Agent Focus) ---
         
-        # De uiteindelijke X-as positie op de radar (Alledaags vs Baanbrekend)
-        # We maken een schaal van 0 (Puur Everyday) tot 10 (Puur Game Changing)
-        # Als Game Changing hoog is, duwt dat de score naar rechts.
-        ai_complexity_score = (game_changing_score * 2) - (everyday_score * 0.5) 
-        # (Dit is een simpele weging, kun je aanpassen)
+        # 1. Bepaal de "Agent Simpelheid" Score:
+        # Een hoge score hier betekent dat de taak gestructureerd en eenvoudig is.
+        agent_simpelheid_score = (gestructureerdheid + regels_complexiteit) / 2
         
-        # Y-as positie (Intern vs Extern)
-        # We geven Intern een waarde 1-5 en Extern 6-10 voor de visualisatie
-        y_pos = 2.5 if target == "Intern (Operaties)" else 7.5
+        # 2. Bepaal de X-AS POSITIE: "Implementatiemoeilijkheid"
+        # X-as loopt van Eenvoudig (Links) naar Complex (Rechts).
+        # Een hoge 'generatieve noodzaak' en een lage 'agent simpelheid' duwen naar rechts (Complex).
+        
+        # De X-Positie wordt bepaald door de combinatie van complexiteit en de generatieve behoefte.
+        # We normaliseren de score zodat deze tussen 1 en 5 ligt.
+        
+        # Hier gebruiken we de Generatieve noodzaak direct als indicator voor complexiteit,
+        # en compenseren we met hoe simpel de taak is.
+        
+        # Simpele, repetitieve taken (Hoge Agent Simpelheid, Lage Generatieve Noodzaak) gaan naar Links (X=1-3).
+        # Complexe, generatieve taken (Lage Agent Simpelheid, Hoge Generatieve Noodzaak) gaan naar Rechts (X=3-5).
+        
+        # Formule om X-positie te bepalen (gewogen gemiddelde, gericht op complexiteit):
+        x_positie = (generatieve_noodzaak * 0.6) + (5 - agent_simpelheid_score) * 0.4
+        
+        # Zorg dat de score binnen het bereik [1, 5] blijft
+        x_positie = max(1, min(5, x_positie))
+
+        # Y-as positie
+        # Back Office = 2.5 (Laag) | Core Capabilities = 7.5 (Hoog)
+        y_pos = 2.5 if target == "Interne Transacties (Back Office)" else 7.5
         
         # Bepaal Kwadrant naam
-        if target == "Intern (Operaties)":
-            kwadrant = "Back Office (Everyday)" if game_changing_score < 3 else "Core Capabilities (Game Changing)"
+        kwadrant_grens = 3.0 # Scheidslijn X=3 in de plot
+        
+        if target == "Interne Transacties (Back Office)":
+            kwadrant = "Back Office Automatisering (Eenvoudig)" if x_positie < kwadrant_grens else "Back Office AI (Complex)"
         else:
-            kwadrant = "Front Office (Everyday)" if game_changing_score < 3 else "Product/Service (Game Changing)"
+            kwadrant = "Core Transacties (Eenvoudig)" if x_positie < kwadrant_grens else "Strategische AI (Complex)"
 
         new_row = pd.DataFrame({
             'Proces': [name],
             'Doelgroep': [target],
-            'Everyday_Score': [everyday_score],
-            'GameChange_Score': [game_changing_score],
-            'X_Positie': [game_changing_score], # Simpele mapping: X-as is mate van "Game Changing"
+            'Everyday_Score': [agent_simpelheid_score], # Hergebruik van de kolomnaam voor Simpelheid
+            'GameChange_Score': [generatieve_noodzaak], # Hergebruik van de kolomnaam voor Generatie
+            'X_Positie': [x_positie], 
             'Y_Positie': [y_pos], 
-            'Volume': [tijd * 10], # Grootte van de bol
+            'Volume': [frequentie_volume * 10], # Grootte van de bol
             'Frustratie': [frustratie], # Kleur
             'Kwadrant': [kwadrant]
         })
         
-        st.session_state['data'] = pd.concat([st.session_state['data'], new_row], ignore_index=True)
+        # ... (De rest van uw logica voor het toevoegen aan st.session_state of Google Sheets)
+        # st.session_state['data'] = pd.concat(...)
+        # conn.write(...)
+        st.success(f"Proces '{name}' geplot op de Agent Radar.")
 
 # 4. Het Dashboard (Rechterkant)
+# In Sectie 4: fig.update_layout
+fig.update_layout(
+    xaxis_title="Implementatiemoeilijkheid AI Agent (Links=Eenvoudig, Rechts=Complex)",
+    yaxis_title="Focus Gebied (Lage Y=Back Office, Hoge Y=Core Capabilities)",
+    showlegend=True
+)
+
+# In Sectie 4: fig.add_annotation
+fig.add_annotation(x=2.0, y=2.5, text="<b>Back Office Automatisering</b><br>(Simpele Agents)", showarrow=False)
+fig.add_annotation(x=4.0, y=2.5, text="<b>Back Office AI</b><br>(Complexe Agents/LLMs)", showarrow=False)
+fig.add_annotation(x=2.0, y=7.5, text="<b>Core Transacties</b><br>(Simpele Agents)", showarrow=False)
+fig.add_annotation(x=4.0, y=7.5, text="<b>Strategische AI</b><br>(Complexe Agents/Generatie)", showarrow=False)
+
 col1, col2 = st.columns([3, 1])
 
 with col1:
@@ -126,4 +169,5 @@ with col2:
         st.markdown("### 💡 Advies")
         top_prio = st.session_state['data'].sort_values(by=['Frustratie', 'Volume'], ascending=False).iloc[0]
         st.warning(f"**Hoogste Prioriteit:** {top_prio['Proces']}")
+
         st.write(f"Dit proces scoort hoog op frustratie ({top_prio['Frustratie']}/5). Kijk hier eerst naar!")
