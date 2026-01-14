@@ -67,8 +67,7 @@ with st.sidebar:
         
         st.success(f"Proces '{name}' toegevoegd!")
         st.rerun()
-
-st.divider()
+        st.divider()
 st.caption("""
     **Bronnen & Disclaimer:** Dit is een onafhankelijke Proof of Concept (POC). De visuele weergave en logica zijn geïnspireerd op de 
     **Gartner AI Opportunity Radar**. 
@@ -76,6 +75,8 @@ st.caption("""
     *Gartner is een geregistreerd handelsmerk van Gartner, Inc. Deze tool is niet gelieerd aan, 
     geautoriseerd door, of gesponsord door Gartner.*
 """)
+
+
 
 # 4. Het Dashboard (Layout met kolommen)
 col1, col2 = st.columns([3, 1])
@@ -140,6 +141,7 @@ with col2:
         if st.button("Lijst leegmaken"):
             st.session_state['data'] = pd.DataFrame(columns=st.session_state['data'].columns)
             st.rerun()
+
 
 
 
