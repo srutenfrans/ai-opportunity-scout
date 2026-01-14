@@ -77,6 +77,11 @@ with col1:
     if not st.session_state['data'].empty:
         df = st.session_state['data']
         
+     # Forceer Volume naar getallen om de 'narwhals' error te voorkomen
+        df["Volume"] = pd.to_numeric(df["Volume"], errors='coerce')
+        df["X_Positie"] = pd.to_numeric(df["X_Positie"], errors='coerce')
+        df["Y_Positie"] = pd.to_numeric(df["Y_Positie"], errors='coerce')
+        
         # Maak de Plotly Grafiek
         fig = px.scatter(
             df, 
@@ -86,7 +91,7 @@ with col1:
             color="Frustratie",
             hover_name="Proces",
             text="Proces",
-            color_continuous_scale=["#00CC96", "#EF553B"], # Groen naar Rood
+            color_continuous_scale=["#00CC96", "#EF553B"],
             range_x=[0, 6],
             range_y=[0, 10],
             title="AI Agent Prioriteiten Matrix"
@@ -126,3 +131,4 @@ with col2:
         if st.button("Lijst leegmaken"):
             st.session_state['data'] = pd.DataFrame(columns=st.session_state['data'].columns)
             st.rerun()
+
