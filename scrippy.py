@@ -121,15 +121,16 @@ with col2:
     st.subheader("Prioriteitenlijst")
     if not st.session_state['data'].empty:
         # Toon tabel
-        st.dataframe(st.session_state['data'][['Proces', 'Kwadrant', 'Business Pain']], hide_index=True)
+        st.dataframe(st.session_state['data'][['Proces', 'Kwadrant', 'Frustratie']], hide_index=True)
         
         # Simpele AI-advies logica
-        top_prio = st.session_state['data'].sort_values(by='Business Pain', ascending=False).iloc[0]
+        top_prio = st.session_state['data'].sort_values(by='Frustratie', ascending=False).iloc[0]
         st.warning(f"**Focus op:** {top_prio['Proces']}")
         st.write(f"Dit proces veroorzaakt de meeste frustratie.")
         
         if st.button("Lijst leegmaken"):
             st.session_state['data'] = pd.DataFrame(columns=st.session_state['data'].columns)
             st.rerun()
+
 
 
