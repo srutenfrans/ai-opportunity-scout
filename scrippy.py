@@ -68,6 +68,9 @@ with st.sidebar:
         st.success(f"Proces '{name}' toegevoegd!")
         st.rerun()
 
+st.divider()
+    st.caption("ℹ️ **Disclaimer:** Deze tool is een onafhankelijke POC gebaseerd op het Gartner-raamwerk. Resultaten zijn indicatief.")
+
 # 4. Het Dashboard (Layout met kolommen)
 col1, col2 = st.columns([3, 1])
 
@@ -131,6 +134,7 @@ with col2:
         if st.button("Lijst leegmaken"):
             st.session_state['data'] = pd.DataFrame(columns=st.session_state['data'].columns)
             st.rerun()
+
 
 
 
