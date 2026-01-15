@@ -1,0 +1,41 @@
+name: Build macOS App
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install streamlit pandas plotly pyinstaller
+
+    - name: Build with PyInstaller
+      run: |
+        # Let op: Op Mac gebruiken we ':' als scheidingsteken bij --add-data
+        pyinstaller --noconfirm --onefile --windowed \
+          --name "AI-Scout" \
+          --add-data "scrippy.py:." \
+          --copy-metadata streamlit \
+          --collect-all streamlit \
+          --collect-all plotly \
+          --collect-all pandas \
+          run_app.py
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: AI-Scout-macOS
+        path: dist/AI-Scout.app
